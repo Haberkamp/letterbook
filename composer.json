@@ -1,7 +1,14 @@
 {
     "name": "nils/letterbook",
     "description": "A Storybook for Laravel emails - browse and preview mailables with Inertia, React and Tailwind.",
-    "keywords": ["laravel", "email", "mailable", "storybook", "inertia", "react"],
+    "keywords": [
+        "laravel",
+        "email",
+        "mailable",
+        "storybook",
+        "inertia",
+        "react"
+    ],
     "type": "library",
     "license": "proprietary",
     "authors": [
@@ -19,7 +26,8 @@
         "larastan/larastan": "^3.0",
         "laravel/pint": "^1.0",
         "orchestra/testbench": "^11.0",
-        "pestphp/pest": "^5.1"
+        "pestphp/pest": "^5.1",
+        "pestphp/pest-plugin-browser": "5.x-dev"
     },
     "autoload": {
         "psr-4": {
@@ -28,7 +36,10 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Letterbook\\Letterbook\\Tests\\": "tests"
+            "Letterbook\\Letterbook\\Tests\\": "tests",
+            "Workbench\\App\\": "workbench/app/",
+            "Workbench\\Database\\Factories\\": "workbench/database/factories/",
+            "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
         }
     },
     "extra": {
@@ -44,5 +55,24 @@
             "pestphp/pest-plugin": true
         }
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "scripts": {
+        "post-autoload-dump": [
+            "@clear",
+            "@prepare"
+        ],
+        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "build": "@php vendor/bin/testbench workbench:build --ansi",
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build",
+            "@php vendor/bin/testbench serve --ansi"
+        ],
+        "lint": [
+            "@php vendor/bin/pint --ansi",
+            "@php vendor/bin/phpstan analyse --verbose --ansi"
+        ],
+        "test": "@php vendor/bin/pest --colors=always"
+    }
 }

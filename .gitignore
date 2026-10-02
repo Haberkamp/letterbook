@@ -20,3 +20,13 @@ Thumbs.db
 
 # Note: public/build is committed on purpose — the package's compiled
 # assets are published to consuming apps from here via vendor:publish.
+
+# Symlink that makes the committed build available at the path the Blade
+# root view expects during local package development/tests.
+/public/vendor
+
+# Playwright / Pest Browser artifacts
+/playwright-report
+/tests-results
+tests/Browser/.results
+/test-results
