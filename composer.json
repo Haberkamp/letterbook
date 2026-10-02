@@ -1,0 +1,48 @@
+{
+    "name": "nils/letterbook",
+    "description": "A Storybook for Laravel emails - browse and preview mailables with Inertia, React and Tailwind.",
+    "keywords": ["laravel", "email", "mailable", "storybook", "inertia", "react"],
+    "type": "library",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Nils Haberkamp",
+            "email": "nils@haberkamp.dev"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "illuminate/contracts": "^13.0",
+        "inertiajs/inertia-laravel": "^3.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.0",
+        "orchestra/testbench": "^11.0",
+        "pestphp/pest": "^5.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Letterbook\\Letterbook\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Letterbook\\Letterbook\\Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Letterbook\\Letterbook\\LetterbookServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "dev"
+}
