@@ -69,8 +69,7 @@ it('focuses the search when pressing command + k', function () {
     $page
         ->assertScript("document.activeElement.placeholder !== 'Search stories...'");
     $page->script("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', code: 'KeyK', keyCode: 75, metaKey: true, bubbles: true, cancelable: true }))");
-    $page->wait(0.2)
-        ->assertScript("document.activeElement.placeholder === 'Search stories...'");
+    $page->assertScript("document.activeElement.placeholder === 'Search stories...'");
 });
 
 it('sends the email to the given address', function () {
@@ -84,7 +83,9 @@ it('sends the email to the given address', function () {
         ->press('Send')
         ->type('input[name="email"]', 'jane@example.com')
         ->click('button[type="submit"]')
-        ->wait(0.5);
+        // on popover success it closes — wait for that (retried) before
+        // asserting on the PHP side, which is not retried
+        ->assertMissing('input[name="email"]');
 
     Mail::assertSent(TestWelcomeMail::class, fn (TestWelcomeMail $mail) => $mail->hasTo('jane@example.com'));
 });
@@ -96,14 +97,11 @@ it('carries over the view mode query parameter when clicking a story link', func
 
     $page
         ->press('Text')
-        ->wait(0.3)
         ->assertQueryStringHas('mode', 'text')
         ->click('Password Reset')
-        ->wait(0.3)
         ->assertUrlIs('*/letterbook/password-reset*')
         ->assertQueryStringHas('mode', 'text');
 });
-
 
 it('adds the search query to the URL when typing into the search bar', function () {
     $page = visit('/letterbook');
@@ -125,11 +123,9 @@ it('switches to the text view via the tabs', function () {
         ->assertQueryStringMissing('mode')
         ->assertDontSee('Welcome (plain)')
         ->press('Text')
-        ->wait(0.3)
         ->assertQueryStringHas('mode', 'text')
         ->assertSee('Welcome (plain)')
         ->press('HTML')
-        ->wait(0.3)
         ->assertQueryStringMissing('mode')
         ->assertDontSee('Welcome (plain)');
 });
@@ -142,8 +138,7 @@ it('switches the view mode by pressing t', function () {
     $page
         ->assertQueryStringMissing('mode');
     $page->script("document.dispatchEvent(new KeyboardEvent('keydown', { key: 't', code: 'KeyT', bubbles: true, cancelable: true }))");
-    $page->wait(0.3)
-        ->assertQueryStringHas('mode', 'text')
+    $page->assertQueryStringHas('mode', 'text')
         ->assertSee('Welcome (plain)');
 });
 
@@ -156,7 +151,6 @@ it('filters the stories when searching', function () {
         ->assertSee('Welcome Email')
         ->assertSee('Password Reset')
         ->type('[placeholder="Search stories..."]', 'welcome')
-        ->wait(0.3)
         ->assertSee('Welcome Email')
         ->assertDontSee('Password Reset');
 });
@@ -168,7 +162,6 @@ it('shows the empty state when no stories match the search', function () {
 
     $page
         ->type('[placeholder="Search stories..."]', 'does-not-exist')
-        ->wait(0.3)
         ->assertSee('No stories match your search.')
         ->assertDontSee('Welcome Email')
         ->assertDontSee('Password Reset');
