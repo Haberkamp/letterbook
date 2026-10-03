@@ -32,7 +32,12 @@ function reducer(machine: SidebarMachine, event: SidebarEvent): SidebarMachine {
             return { state: next, desktopOpen: false, mobileOpen: false }
         }
 
-        return { ...machine, state: next }
+        // An explicit open also marks the current breakpoint as open
+        if (next === 'desktopOpen') {
+            return { ...machine, state: next, desktopOpen: true }
+        }
+
+        return { ...machine, state: next, mobileOpen: true }
     }
 
     if (event === 'enterDesktop') {
