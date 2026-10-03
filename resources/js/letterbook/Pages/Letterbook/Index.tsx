@@ -20,6 +20,7 @@ import SendPopover from '../../Components/SendPopover'
 import { SidebarToggleIcon } from '../../Components/icons/SidebarToggleIcon'
 import { Logo } from '../../Components/Logo'
 import { useQueryParameter } from '../../hooks/useQueryParameter'
+import { useSidebar } from '../../hooks/useSidebar'
 
 export interface StoryEntry {
     slug: string
@@ -118,7 +119,7 @@ export default function Index({ stories, slug, sendUrl, email }: PageProps) {
 
     const openItems = [...new Set([...defaultOpenParents, ...searchOpenParents])]
 
-    const [sidebarOpen, setSidebarOpen] = useState(true)
+    const { isOpen: sidebarOpen, isMobile: sidebarIsMobile, send: sendSidebar } = useSidebar()
 
     const storyUrl = (storySlug: string) => {
         const params = new URLSearchParams()
@@ -135,11 +136,13 @@ export default function Index({ stories, slug, sendUrl, email }: PageProps) {
             <AnimatePresence initial={false}>
                 {sidebarOpen && (
                     <motion.aside
-                        initial={{ width: 0 }}
-                        animate={{ width: 288 }}
-                        exit={{ width: 0 }}
+                        initial={{ width: sidebarIsMobile ? 288 : 0, x: sidebarIsMobile ? '-100%' : 0 }}
+                        animate={{ width: 288, x: 0 }}
+                        exit={{ width: sidebarIsMobile ? 288 : 0, x: sidebarIsMobile ? '-100%' : 0 }}
                         transition={{ type: 'spring', bounce: 0.05, duration: 0.4 }}
-                        className="relative shrink-0 overflow-hidden"
+                        className={`relative shrink-0 overflow-hidden ${
+                            sidebarIsMobile ? 'absolute inset-y-0 left-0 z-40 shadow-2xl' : ''
+                        }`}
                     >
                         <div className="flex h-full w-72 flex-col">
                             <div className="h-12 border-b border-neutral-800">
@@ -348,6 +351,20 @@ export default function Index({ stories, slug, sendUrl, email }: PageProps) {
                 )}
             </AnimatePresence>
 
+            <AnimatePresence initial={false}>
+                {sidebarOpen && sidebarIsMobile && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute inset-0 z-30 bg-black/50"
+                        onClick={() => sendSidebar('close')}
+                        aria-hidden="true"
+                    />
+                )}
+            </AnimatePresence>
+
             <Tabs.Root
                 value={view}
                 onValueChange={(value) => setMode(value === 'text' ? 'text' : null)}
@@ -357,8 +374,9 @@ export default function Index({ stories, slug, sendUrl, email }: PageProps) {
                     <div className="flex min-w-0 items-center gap-3">
                         <Button
                             variant="icon"
-                            onClick={() => setSidebarOpen(!sidebarOpen)}
+                            onClick={() => sendSidebar(sidebarOpen ? 'close' : 'open')}
                             aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+                            aria-expanded={sidebarOpen}
                         >
                             <SidebarToggleIcon collapsed={!sidebarOpen} />
                         </Button>
