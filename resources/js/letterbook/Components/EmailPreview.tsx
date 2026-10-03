@@ -1,5 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 
+import { useSessionStorage } from '../hooks/useSessionStorage'
+
 interface EmailPreviewProps {
     html?: string
     text?: string
@@ -17,7 +19,7 @@ function clampWidth(width: number) {
 }
 
 export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
-    const [width, setWidth] = useState(DEFAULT_WIDTH)
+    const [width, setWidth] = useSessionStorage('letterbook.emailPreview.width', DEFAULT_WIDTH)
     const [draggingEdge, setDraggingEdge] = useState<-1 | 1 | null>(null)
     const iframeRef = useRef<HTMLIFrameElement>(null)
     const dragStateRef = useRef<{
@@ -80,7 +82,6 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
         setWidth(DEFAULT_WIDTH)
         applyWidth(DEFAULT_WIDTH)
     }
-
     if (mode === 'text') {
         return (
             <pre className="p-6 text-sm whitespace-pre-wrap text-neutral-800 dark:text-neutral-200 [&_*]:select-text select-text">
