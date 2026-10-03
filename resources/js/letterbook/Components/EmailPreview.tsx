@@ -109,7 +109,7 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
     const focusClass = 'group-focus-visible/bar:focus-ring'
 
     const barColor = () =>
-        'bg-neutral-400 dark:bg-neutral-700 hover:bg-neutral-600 dark:hover:bg-neutral-500'
+        'bg-neutral-400 dark:bg-neutral-700 group-hover/bar:bg-neutral-600 dark:group-hover/bar:bg-neutral-500'
 
     return (
         <div ref={containerRef} className="group relative flex justify-center p-6">
