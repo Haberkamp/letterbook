@@ -44,7 +44,7 @@ return [
 
 ## Usage
 
-Once installed, visit `/letterbook` (or your configured path) in your browser to browse your email stories. You can preview the rendered HTML and plain-text output of each mailable, and send the email to any address using the built-in send form.
+Once installed, visit `/letterbook` (or your configured path) in your browser to browse your email stories. You can preview the rendered HTML and plain-text output of each mailable and send the email to any address using the built-in send form.
 
 ### Defining Stories
 
@@ -63,11 +63,9 @@ Letterbook::story('Welcome Email', fn () => new WelcomeEmail(user: $user))
 Letterbook::story('Order Shipped', fn () => new OrderShipped($order), group: 'Orders');
 ```
 
-Story files may also be plain functions that return mailables — see the API below for registering additional files.
-
 ### Grouping and Variants
 
-Pass a `group` to organize stories in the sidebar, and add variants to show the same email in different states:
+Pass a `group` to organize stories in the sidebar and add variants to show the same email in different states:
 
 ```php
 $story = Letterbook::story('Invoice', fn () => new InvoiceMail($unpaidInvoice), group: 'Billing');
