@@ -185,14 +185,27 @@ function useContainerMaxWidth(minWidth: number) {
             return
         }
 
-        const observer = new ResizeObserver(() => {
-            setMaxWidth(Math.max(minWidth, container.clientWidth - RESERVED_SPACE))
-        })
+        let frame: number | null = null
+
+        const updateMaxWidth = () => {
+            frame = requestAnimationFrame(() => {
+                frame = null
+                setMaxWidth(Math.max(minWidth, container.clientWidth - RESERVED_SPACE))
+            })
+        }
+
+        const observer = new ResizeObserver(updateMaxWidth)
 
         observer.observe(container)
         setMaxWidth(Math.max(minWidth, container.clientWidth - RESERVED_SPACE))
 
-        return () => observer.disconnect()
+        return () => {
+            if (frame !== null) {
+                cancelAnimationFrame(frame)
+            }
+
+            observer.disconnect()
+        }
     }, [minWidth])
 
     return { containerRef, maxWidth, clampWidth }
