@@ -23,7 +23,16 @@ function reducer(machine: SidebarMachine, event: SidebarEvent): SidebarMachine {
     if (event === 'open' || event === 'close') {
         const next = transitions[machine.state][event] ?? machine.state
 
-        return next === machine.state ? machine : { ...machine, state: next }
+        if (next === machine.state) {
+            return machine
+        }
+
+        // An explicit close also clears the remembered "open" state on the other breakpoint
+        if (event === 'close') {
+            return { state: next, desktopOpen: false, mobileOpen: false }
+        }
+
+        return { ...machine, state: next }
     }
 
     if (event === 'enterDesktop') {
