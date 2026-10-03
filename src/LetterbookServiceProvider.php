@@ -4,6 +4,7 @@ namespace Letterbook\Letterbook;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Letterbook\Letterbook\Http\Middleware\AuthorizeLetterbookAccess;
 use Letterbook\Letterbook\Http\Middleware\SetLetterbookRootView;
 use Letterbook\Letterbook\Support\Letterbook;
 use Letterbook\Letterbook\Support\StoryRegistry;
