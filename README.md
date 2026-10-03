@@ -7,7 +7,7 @@ A better way to develop emails. Similar to Storybook, but for your Laravel maila
 Install the package via Composer:
 
 ```bash
-composer require nils/letterbook
+composer require haberkamp/letterbook
 ```
 
 Publish the config file:

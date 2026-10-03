@@ -1,5 +1,5 @@
 {
-    "name": "nils/letterbook",
+    "name": "haberkamp/letterbook",
     "description": "A Storybook for Laravel emails - browse and preview mailables with Inertia, React and Tailwind.",
     "keywords": [
         "laravel",
