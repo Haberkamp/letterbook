@@ -25,6 +25,7 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
         startWidth: number
         edge: -1 | 1
         pointerId: number
+        moved: boolean
     } | null>(null)
 
     const applyWidth = useCallback((nextWidth: number) => {
@@ -51,7 +52,13 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
 
         event.preventDefault()
         event.currentTarget.setPointerCapture(event.pointerId)
-        dragStateRef.current = { startX: event.clientX, startWidth: width, edge, pointerId: event.pointerId }
+        dragStateRef.current = {
+            startX: event.clientX,
+            startWidth: width,
+            edge,
+            pointerId: event.pointerId,
+            moved: false,
+        }
         setDraggingEdge(edge)
     }
 
@@ -62,6 +69,9 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
         }
 
         const delta = (event.clientX - dragState.startX) * dragState.edge * 2
+        if (Math.abs(event.clientX - dragState.startX) >= 4) {
+            dragState.moved = true
+        }
         applyWidth(clampWidth(dragState.startWidth + delta))
     }
 
@@ -71,8 +81,14 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
         event.currentTarget.releasePointerCapture?.(event.pointerId)
         setDraggingEdge(null)
 
-        if (dragState && iframeRef.current) {
-            setWidth(clampWidth(parseFloat(iframeRef.current.style.width)))
+        if (dragState) {
+            // A plain click (no drag) resets to the default width.
+            if (!dragState.moved) {
+                setWidth(DEFAULT_WIDTH)
+                applyWidth(DEFAULT_WIDTH)
+            } else if (iframeRef.current) {
+                setWidth(clampWidth(parseFloat(iframeRef.current.style.width)))
+            }
         }
     }
 
