@@ -12,6 +12,10 @@
     *:focus {
         outline: none;
     }
+
+    ::selection {
+        background-color: rgb(251 191 36 / 0.4);
+    }
 }
 
 @utility focus-ring {
