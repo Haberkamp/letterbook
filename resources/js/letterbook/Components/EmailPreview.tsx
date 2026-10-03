@@ -38,6 +38,7 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
     const [width, setWidth] = useSessionStorage('letterbook.emailPreview.width', DEFAULT_WIDTH)
     const [draggingEdge, setDraggingEdge] = useState<-1 | 1 | null>(null)
     const [handleOffset, setHandleOffset] = useState(0)
+    const [handleScale, setHandleScale] = useState(1)
     const { containerRef, maxWidth, clampWidth } = useContainerMaxWidth(MIN_WIDTH)
     const iframeRef = useRef<HTMLIFrameElement>(null)
     const dragStateRef = useRef<{
@@ -91,6 +92,8 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
 
         applyWidth(clamped)
         setHandleOffset(Math.round((visual - clamped) * dragState.edge))
+        // Subtle squash/stretch proportional to the overshoot: past the max it grows, past the min it shrinks
+        setHandleScale(raw > maxWidth ? 1 + Math.min((raw - maxWidth) / (maxWidth - MIN_WIDTH), 1) * 0.05 : raw < MIN_WIDTH ? 1 - Math.min((MIN_WIDTH - raw) / (maxWidth - MIN_WIDTH), 1) * 0.05 : 1)
     }
 
     const endDrag = (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -99,6 +102,7 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
         event.currentTarget.releasePointerCapture?.(event.pointerId)
         setDraggingEdge(null)
         setHandleOffset(0)
+        setHandleScale(1)
 
         if (dragState && iframeRef.current) {
             setWidth(clampWidth(parseFloat(iframeRef.current.style.width)))
@@ -152,8 +156,8 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
                     onPointerCancel={endDrag}
                     onDoubleClick={resetWidth}
                     onKeyDown={barKeyDown(-1)}
-                    style={draggingEdge === -1 ? { translate: `${handleOffset}px -50%` } : undefined}
-                    className={`${barClass} -left-1 -ml-6 px-2.5 ${draggingEdge === -1 ? 'transition-[translate] duration-200 ease-out' : ''}`}
+                    style={draggingEdge === -1 ? { translate: `${handleOffset}px -50%`, scale: `1 ${handleScale}` } : undefined}
+                    className={`${barClass} -left-1 -ml-6 px-2.5 ${draggingEdge === -1 ? 'transition-[translate,scale] duration-200 ease-out' : ''}`}
                 >
                     <span className={`mx-auto block h-full w-1 rounded-full transition-colors ${focusClass} ${barColor()}`} />
                 </button>
@@ -180,8 +184,8 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
                     onPointerCancel={endDrag}
                     onDoubleClick={resetWidth}
                     onKeyDown={barKeyDown(1)}
-                    style={draggingEdge === 1 ? { translate: `${handleOffset}px -50%` } : undefined}
-                    className={`${barClass} -right-1 -mr-6 px-2.5 ${draggingEdge === 1 ? 'transition-[translate] duration-200 ease-out' : ''}`}
+                    style={draggingEdge === 1 ? { translate: `${handleOffset}px -50%`, scale: `1 ${handleScale}` } : undefined}
+                    className={`${barClass} -right-1 -mr-6 px-2.5 ${draggingEdge === 1 ? 'transition-[translate,scale] duration-200 ease-out' : ''}`}
                 >
                     <span className={`mx-auto block h-full w-1 rounded-full transition-colors ${focusClass} ${barColor()}`} />
                 </button>
