@@ -132,11 +132,13 @@ export default function Index({ stories, slug, sendUrl, email }: PageProps) {
 
     const sidebarContent = (
         <div className="flex h-full w-72 flex-col">
-            <div className="h-12 border-b border-neutral-800">
+            <div
+                className={`h-12 border-b border-neutral-800 ${sidebarIsMobile ? 'border-r border-neutral-800' : ''}`}
+            >
                 <motion.div
-                    initial={{ opacity: 0 }}
+                    initial={sidebarIsMobile ? false : { opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+                    exit={sidebarIsMobile ? undefined : { opacity: 0 }}
                     transition={{ duration: 0.15, ease: 'easeOut' }}
                     className="flex h-12 items-center gap-2 px-4"
                 >
@@ -146,9 +148,9 @@ export default function Index({ stories, slug, sendUrl, email }: PageProps) {
 
             <div className="border-b border-neutral-800">
                                 <motion.div
-                                    initial={{ opacity: 0 }}
+                                    initial={sidebarIsMobile ? false : { opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
+                                    exit={sidebarIsMobile ? undefined : { opacity: 0 }}
                                     transition={{ duration: 0.15, ease: 'easeOut' }}
                                     className="p-3"
                                 >
@@ -200,9 +202,9 @@ export default function Index({ stories, slug, sendUrl, email }: PageProps) {
 
                             <div className="min-h-0 flex-1" {...rovingFocus.listProps}>
                                 <motion.div
-                                    initial={{ opacity: 0 }}
+                                    initial={sidebarIsMobile ? false : { opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
+                                    exit={sidebarIsMobile ? undefined : { opacity: 0 }}
                                     transition={{ duration: 0.15, ease: 'easeOut' }}
                                     className="h-full"
                                 >
