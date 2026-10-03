@@ -10,7 +10,7 @@
         "react"
     ],
     "type": "library",
-    "license": "proprietary",
+    "license": "MIT",
     "authors": [
         {
             "name": "Nils Haberkamp",
