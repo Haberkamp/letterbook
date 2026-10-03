@@ -66,9 +66,12 @@ it('focuses the search when pressing command + k', function () {
 
     $page->assertNoJavascriptErrors();
 
+    // The hotkey listener is attached to `document`, so sending the
+    // key via Playwright on `body` doesn't reach it — dispatch a
+    // synthetic event instead
     $page
         ->assertScript("document.activeElement.placeholder !== 'Search stories...'");
-    $page->script("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', code: 'KeyK', keyCode: 75, metaKey: true, bubbles: true, cancelable: true }))");
+    $page->script("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true, cancelable: true }))");
     $page->assertScript("document.activeElement.placeholder === 'Search stories...'");
 });
 
@@ -135,9 +138,9 @@ it('switches the view mode by pressing t', function () {
 
     $page->assertNoJavascriptErrors();
 
-    $page
-        ->assertQueryStringMissing('mode');
-    $page->script("document.dispatchEvent(new KeyboardEvent('keydown', { key: 't', code: 'KeyT', bubbles: true, cancelable: true }))");
+    // Same as cmd+k — the hotkey listener lives on `document`
+    $page->assertQueryStringMissing('mode');
+    $page->script("document.dispatchEvent(new KeyboardEvent('keydown', { key: 't', bubbles: true, cancelable: true }))");
     $page->assertQueryStringHas('mode', 'text')
         ->assertSee('Welcome (plain)');
 });
@@ -160,16 +163,11 @@ it('focuses the first item when pressing arrow down on the search', function () 
 
     $page->assertNoJavascriptErrors();
 
-    // Synthetic keydown since Playwright's ArrowDown on the input is
-    // intercepted by the IME / autocomplete flow
-    $page->script("document.querySelector('[placeholder=\"Search stories...\"]').focus()");
-    $page->assertScript("document.activeElement.placeholder === 'Search stories...'");
-
-    $page->script("document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }))");
-    // Focus moved off the search onto a focusable story item
-    $page->assertScript("document.activeElement.placeholder !== 'Search stories...'")
-        ->assertScript("document.activeElement.tagName === 'A' || document.activeElement.tagName === 'BUTTON'")
-        ->assertScript("document.activeElement.tabIndex === 0");
+    // The sidebar is sorted alphabetically, so Password Reset comes first
+    $page
+        ->click('[placeholder="Search stories..."]')
+        ->keys('[placeholder="Search stories..."]', 'ArrowDown')
+        ->assertScript("document.activeElement.textContent.trim() === 'Password Reset'");
 });
 
 it('focuses the search when pressing arrow up on the first item', function () {
@@ -177,14 +175,12 @@ it('focuses the search when pressing arrow up on the first item', function () {
 
     $page->assertNoJavascriptErrors();
 
-    $page->script("document.querySelector('[placeholder=\"Search stories...\"]').focus()");
-    $page->script("document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }))");
-
-    // Now on the first item — synthetic ArrowUp should escape to search
-    $page->assertScript("document.activeElement.placeholder !== 'Search stories...'");
-
-    $page->script("document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, cancelable: true }))");
-    $page->assertScript("document.activeElement.placeholder === 'Search stories...'");
+    $page
+        ->click('[placeholder="Search stories..."]')
+        ->keys('[placeholder="Search stories..."]', 'ArrowDown')
+        ->assertScript("document.activeElement.textContent.trim() === 'Password Reset'")
+        ->keys('a[href="/letterbook/password-reset"]', 'ArrowUp')
+        ->assertScript("document.activeElement.placeholder === 'Search stories...'");
 });
 
 it('focuses the next item when pressing arrow down on an item', function () {
@@ -192,15 +188,11 @@ it('focuses the next item when pressing arrow down on an item', function () {
 
     $page->assertNoJavascriptErrors();
 
-    // Determine first + second registered story items in the sidebar
-    $names = $page->script("[...document.querySelectorAll('a[href^=\"/letterbook/\"]')].map(a => a.textContent.trim())");
-    [$first, $second] = $names;
-
-    $page->script("(function(){ const a = [...document.querySelectorAll('a[href^=\"/letterbook/\"]')].find(a => a.textContent.trim() === " . json_encode($first) . "); a.focus(); })()");
-    $page->assertScript("document.activeElement.textContent.trim() === " . json_encode($first));
-
-    $page->script("document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }))");
-    $page->assertScript("document.activeElement.textContent.trim() === " . json_encode($second));
+    $page
+        ->click('a[href="/letterbook/password-reset"]')
+        ->assertScript("document.activeElement.textContent.trim() === 'Password Reset'")
+        ->keys('a[href="/letterbook/password-reset"]', 'ArrowDown')
+        ->assertScript("document.activeElement.textContent.trim() === 'Welcome Email'");
 });
 
 it('keeps focus on the last item when pressing arrow down on it', function () {
@@ -208,14 +200,11 @@ it('keeps focus on the last item when pressing arrow down on it', function () {
 
     $page->assertNoJavascriptErrors();
 
-    $names = $page->script("[...document.querySelectorAll('a[href^=\"/letterbook/\"]')].map(a => a.textContent.trim())");
-    $last = end($names);
-
-    $page->script("(function(){ const a = [...document.querySelectorAll('a[href^=\"/letterbook/\"]')].find(a => a.textContent.trim() === " . json_encode($last) . "); a.focus(); })()");
-    $page->assertScript("document.activeElement.textContent.trim() === " . json_encode($last));
-
-    $page->script("document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }))");
-    $page->assertScript("document.activeElement.textContent.trim() === " . json_encode($last));
+    $page
+        ->click('a[href="/letterbook/welcome-email"]')
+        ->assertScript("document.activeElement.textContent.trim() === 'Welcome Email'")
+        ->keys('a[href="/letterbook/welcome-email"]', 'ArrowDown')
+        ->assertScript("document.activeElement.textContent.trim() === 'Welcome Email'");
 });
 
 it('shows the empty state when no stories match the search', function () {
