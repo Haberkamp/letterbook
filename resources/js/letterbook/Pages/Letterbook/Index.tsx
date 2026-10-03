@@ -18,6 +18,7 @@ import { SubItemIcon } from '../../Components/icons/SubItemIcon'
 import { SelectedIcon } from '../../Components/icons/SelectedIcon'
 import SendPopover from '../../Components/SendPopover'
 import { SidebarToggleIcon } from '../../Components/icons/SidebarToggleIcon'
+import { Logo } from '../../Components/Logo'
 import { useQueryParameter } from '../../hooks/useQueryParameter'
 
 export interface StoryEntry {
@@ -148,7 +149,7 @@ export default function Index({ stories, slug, email }: PageProps) {
                                     transition={{ duration: 0.15, ease: 'easeOut' }}
                                     className="flex h-12 items-center gap-2 px-4"
                                 >
-                                    <span className="text-lg font-medium">Letterbook</span>
+                                    <Logo className="h-5 w-auto" />
                                 </motion.div>
                             </div>
 
