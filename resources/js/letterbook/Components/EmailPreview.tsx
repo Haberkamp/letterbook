@@ -14,10 +14,30 @@ const DEFAULT_WIDTH = 672
 const STEP = 32
 const SHIFT_MULTIPLIER = 4
 const RESERVED_SPACE = 120
+const OVERSHOOT_MAX = 14.4
+
+// Overshoot / follow-through: let the handle travel a little past the limit with diminishing resistance
+function overshoot(raw: number, min: number, max: number) {
+    if (raw < min) {
+        return min - easeOut(Math.min((min - raw) / (max - min), 1)) * OVERSHOOT_MAX
+    }
+
+    if (raw > max) {
+        return max + easeOut(Math.min((raw - max) / (max - min), 1)) * OVERSHOOT_MAX
+    }
+
+    return raw
+}
+
+function easeOut(value: number) {
+    // Quadratic ease-out over the normalized range [0, 1]
+    return 1 - (1 - value) ** 2
+}
 
 export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
     const [width, setWidth] = useSessionStorage('letterbook.emailPreview.width', DEFAULT_WIDTH)
     const [draggingEdge, setDraggingEdge] = useState<-1 | 1 | null>(null)
+    const [handleOffset, setHandleOffset] = useState(0)
     const { containerRef, maxWidth, clampWidth } = useContainerMaxWidth(MIN_WIDTH)
     const iframeRef = useRef<HTMLIFrameElement>(null)
     const dragStateRef = useRef<{
@@ -65,8 +85,12 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
             return
         }
 
-        const delta = (event.clientX - dragState.startX) * dragState.edge * 2
-        applyWidth(clampWidth(dragState.startWidth + delta))
+        const raw = dragState.startWidth + (event.clientX - dragState.startX) * dragState.edge * 2
+        const clamped = clampWidth(raw)
+        const visual = overshoot(raw, MIN_WIDTH, maxWidth)
+
+        applyWidth(clamped)
+        setHandleOffset(Math.round((visual - clamped) * dragState.edge))
     }
 
     const endDrag = (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -74,6 +98,7 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
         dragStateRef.current = null
         event.currentTarget.releasePointerCapture?.(event.pointerId)
         setDraggingEdge(null)
+        setHandleOffset(0)
 
         if (dragState && iframeRef.current) {
             setWidth(clampWidth(parseFloat(iframeRef.current.style.width)))
@@ -127,7 +152,8 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
                     onPointerCancel={endDrag}
                     onDoubleClick={resetWidth}
                     onKeyDown={barKeyDown(-1)}
-                    className={`${barClass} -left-1 -ml-6 px-2.5`}
+                    style={draggingEdge === -1 ? { translate: `${handleOffset}px -50%` } : undefined}
+                    className={`${barClass} -left-1 -ml-6 px-2.5 ${draggingEdge === -1 ? 'transition-[translate] duration-200 ease-out' : ''}`}
                 >
                     <span className={`mx-auto block h-full w-1 rounded-full transition-colors ${focusClass} ${barColor()}`} />
                 </button>
@@ -154,7 +180,8 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
                     onPointerCancel={endDrag}
                     onDoubleClick={resetWidth}
                     onKeyDown={barKeyDown(1)}
-                    className={`${barClass} -right-1 -mr-6 px-2.5`}
+                    style={draggingEdge === 1 ? { translate: `${handleOffset}px -50%` } : undefined}
+                    className={`${barClass} -right-1 -mr-6 px-2.5 ${draggingEdge === 1 ? 'transition-[translate] duration-200 ease-out' : ''}`}
                 >
                     <span className={`mx-auto block h-full w-1 rounded-full transition-colors ${focusClass} ${barColor()}`} />
                 </button>
