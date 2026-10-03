@@ -1,4 +1,5 @@
 import { Accordion } from '@base-ui/react/accordion'
+import { Dialog } from '@base-ui/react/dialog'
 import { Tabs } from '@base-ui/react/tabs'
 import { Input as BaseInput } from '@base-ui/react/input'
 import { Head, Link } from '@inertiajs/react'
@@ -129,35 +130,21 @@ export default function Index({ stories, slug, sendUrl, email }: PageProps) {
         return `/letterbook/${storySlug}${search ? `?${search}` : ''}`
     }
 
-    return (
-        <div className="flex h-screen bg-neutral-950 text-neutral-100">
-            <Head title={email.subject || 'Letterbook'} />
+    const sidebarContent = (
+        <div className="flex h-full w-72 flex-col">
+            <div className="h-12 border-b border-neutral-800">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                    className="flex h-12 items-center gap-2 px-4"
+                >
+                    <Logo className="h-5 w-auto" />
+                </motion.div>
+            </div>
 
-            <AnimatePresence initial={false}>
-                {sidebarOpen && (
-                    <motion.aside
-                        initial={{ width: sidebarIsMobile ? 288 : 0, x: sidebarIsMobile ? '-100%' : 0 }}
-                        animate={{ width: 288, x: 0 }}
-                        exit={{ width: sidebarIsMobile ? 288 : 0, x: sidebarIsMobile ? '-100%' : 0 }}
-                        transition={{ type: 'spring', bounce: 0.05, duration: 0.4 }}
-                        className={`relative shrink-0 overflow-hidden ${
-                            sidebarIsMobile ? 'absolute inset-y-0 left-0 z-40 shadow-2xl' : ''
-                        }`}
-                    >
-                        <div className="flex h-full w-72 flex-col">
-                            <div className="h-12 border-b border-neutral-800">
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.15, ease: 'easeOut' }}
-                                    className="flex h-12 items-center gap-2 px-4"
-                                >
-                                    <Logo className="h-5 w-auto" />
-                                </motion.div>
-                            </div>
-
-                            <div className="border-b border-neutral-800">
+            <div className="border-b border-neutral-800">
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
@@ -336,34 +323,55 @@ export default function Index({ stories, slug, sendUrl, email }: PageProps) {
                                             ? 'No stories match your search.'
                                             : 'No email stories found. Define them in your stories file.'}
                                     </p>
-                                )}
-                            </Accordion.Root>
-                                </motion.div>
-                            </div>
-                        </div>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1, transition: { duration: 0.1, delay: 0.05 } }}
-                            exit={{ opacity: 0, transition: { duration: 0.25, delay: 0.15 } }}
-                            className="absolute inset-y-0 right-0 w-px bg-neutral-800"
-                        />
-                    </motion.aside>
                 )}
-            </AnimatePresence>
+            </Accordion.Root>
+                </motion.div>
+            </div>
+        </div>
+    )
 
-            <AnimatePresence initial={false}>
-                {sidebarOpen && sidebarIsMobile && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute inset-0 z-30 bg-black/50"
-                        onClick={() => sendSidebar('close')}
-                        aria-hidden="true"
-                    />
-                )}
-            </AnimatePresence>
+    return (
+        <div className="flex h-screen bg-neutral-950 text-neutral-100">
+            <Head title={email.subject || 'Letterbook'} />
+
+            {sidebarIsMobile ? (
+                <Dialog.Root
+                    open={sidebarOpen}
+                    onOpenChange={(open) => sendSidebar(open ? 'open' : 'close')}
+                    modal={false}
+                >
+                    <Dialog.Portal keepMounted>
+                        <Dialog.Backdrop
+                            className="absolute inset-0 z-30 bg-black/50 data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 transition-opacity duration-200"
+                        />
+                        <Dialog.Popup
+                            className="absolute inset-y-0 left-0 z-40 w-72 bg-neutral-950 text-neutral-100 shadow-2xl outline-none data-[starting-style]:-translate-x-full data-[ending-style]:-translate-x-full transition-transform duration-300 ease-out"
+                        >
+                            {sidebarContent}
+                        </Dialog.Popup>
+                    </Dialog.Portal>
+                </Dialog.Root>
+            ) : (
+                <AnimatePresence initial={false}>
+                    {sidebarOpen && (
+                        <motion.aside
+                            initial={{ width: 0 }}
+                            animate={{ width: 288 }}
+                            exit={{ width: 0 }}
+                            transition={{ type: 'spring', bounce: 0.05, duration: 0.4 }}
+                            className="relative shrink-0 overflow-hidden"
+                        >
+                            {sidebarContent}
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1, transition: { duration: 0.1, delay: 0.05 } }}
+                                exit={{ opacity: 0, transition: { duration: 0.25, delay: 0.15 } }}
+                                className="absolute inset-y-0 right-0 w-px bg-neutral-800"
+                            />
+                        </motion.aside>
+                    )}
+                </AnimatePresence>
+            )}
 
             <Tabs.Root
                 value={view}

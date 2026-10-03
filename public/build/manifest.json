@@ -28,7 +28,7 @@
     "src": "_inter-600-normal-LgqL8muc.woff2"
   },
   "resources/css/letterbook.css": {
-    "file": "assets/letterbook-NAROloUg.css",
+    "file": "assets/letterbook-CXsShrra.css",
     "name": "letterbook",
     "names": [
       "letterbook.css"
@@ -37,7 +37,7 @@
     "isEntry": true
   },
   "resources/js/letterbook/app.tsx": {
-    "file": "assets/app-tCr2n9_h.js",
+    "file": "assets/app-B2fYL9wx.js",
     "name": "app",
     "src": "resources/js/letterbook/app.tsx",
     "isEntry": true
