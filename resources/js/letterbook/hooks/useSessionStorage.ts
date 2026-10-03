@@ -1,4 +1,6 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+const WRITE_DEBOUNCE_MS = 250
 
 export function useSessionStorage<T>(key: string, initialValue: T): [T, (value: T | ((current: T) => T)) => void] {
     const [value, setValue] = useState<T>(() => {
@@ -11,22 +13,35 @@ export function useSessionStorage<T>(key: string, initialValue: T): [T, (value: 
         }
     })
 
-    const set = useCallback(
-        (next: T | ((current: T) => T)) => {
-            setValue((current) => {
-                const resolved = next instanceof Function ? next(current) : next
+    const latestRef = useRef(value)
+    latestRef.current = value
 
-                try {
-                    window.sessionStorage.setItem(key, JSON.stringify(resolved))
-                } catch {
-                    // Ignore storage failures (e.g. quota exceeded, private mode)
-                }
+    const set = useCallback((next: T | ((current: T) => T)) => {
+        setValue((current) => {
+            const resolved = next instanceof Function ? next(current) : next
 
-                return resolved
-            })
-        },
-        [key],
-    )
+            latestRef.current = resolved
+
+            return resolved
+        })
+    }, [])
+
+    // Debounce storage writes so frequent updates (e.g. while resizing) don't block the main thread
+    useEffect(() => {
+        if (latestRef.current === undefined) {
+            return
+        }
+
+        const timer = setTimeout(() => {
+            try {
+                window.sessionStorage.setItem(key, JSON.stringify(latestRef.current))
+            } catch {
+                // Ignore storage failures (e.g. quota exceeded, private mode)
+            }
+        }, WRITE_DEBOUNCE_MS)
+
+        return () => clearTimeout(timer)
+    }, [key, value])
 
     return [value, set]
 }
