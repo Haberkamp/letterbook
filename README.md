@@ -26,12 +26,21 @@ php artisan vendor:publish --tag=letterbook-assets
 
 The published `config/letterbook.php` file contains the following options:
 
-| Key | Description | Default |
-| --- | --- | --- |
-| `path` | URL path where the Letterbook UI is served. | `letterbook` |
-| `middleware` | Middleware applied to the Letterbook routes. | `['web']` |
-| `stories` | Path to the file (or directory) where your email stories are defined. | `app_path('Mail/stories.php')` |
-| `gate` | Gate name or closure to guard the UI. Return `false` to deny access. | `null` |
+```php
+return [
+    // URL path where the Letterbook UI is served.
+    'path' => env('LETTERBOOK_PATH', 'letterbook'),
+
+    // Middleware applied to the Letterbook routes.
+    'middleware' => ['web'],
+
+    // Path to the file (or directory) where your email stories are defined.
+    'stories' => app_path('Mail/stories.php'),
+
+    // Gate name or closure to guard the UI. Return false to deny access.
+    'gate' => null,
+];
+```
 
 ## Usage
 
@@ -68,93 +77,12 @@ $story->variant('Paid', fn () => new InvoiceMail($paidInvoice));
 
 ### Restricting Access
 
-Guard the UI behind a gate or closure in production:
+Guard the UI behind a closure in production:
 
 ```php
 // config/letterbook.php
-'gate' => 'viewLetterbook',
-
-// or a closure
 'gate' => fn ($request) => app()->environment('local'),
 ```
-
-## API
-
-### `Letterbook` Facade
-
-The `Letterbook` facade (`Letterbook\Letterbook\Support\Facades\Letterbook`) is the main entry point for registering stories.
-
-#### `story(string $title, Closure $mailable, ?string $group = null): Story`
-
-Register an email story. The closure must return an instance of `Illuminate\Mail\Mailable`.
-
-```php
-Letterbook::story('Password Reset', fn () => new PasswordResetMail($token));
-```
-
-#### `stories(string $path): void`
-
-Register a single PHP file containing story definitions, loaded lazily.
-
-```php
-Letterbook::stories(app_path('Mail/billing-stories.php'));
-```
-
-#### `storiesIn(string $path): void`
-
-Register every PHP file in a directory as story files.
-
-```php
-Letterbook::storiesIn(app_path('Mail/Stories'));
-```
-
-### `Story`
-
-A registered email story, returned by `Letterbook::story()`.
-
-#### `description(string $description): static`
-
-Attach a description shown in the UI.
-
-#### `variant(string $title, Closure $mailable): Story`
-
-Add a nested variant of the story (e.g. different states of the same email).
-
-#### `variants(): array`
-
-Get all variants of the story.
-
-#### `slug(): string`
-
-The URL-safe slug for the story, including any group prefix.
-
-#### `depth(): int`
-
-Nesting depth — `0` for top-level stories, higher for variants.
-
-#### `resolve(): Mailable`
-
-Resolve the story's closure to a mailable instance. Throws `InvalidArgumentException` if the closure does not return a `Mailable`.
-
-#### `render(): RenderedEmail`
-
-Render the mailable to HTML and plain text without sending it.
-
-### `RenderedEmail`
-
-The result of `Story::render()`.
-
-- `html: string` — the rendered HTML body.
-- `text: string` — the rendered plain-text body (empty if the mailable has no text view).
-- `subject: string` — the subject from the mailable's envelope, falling back to a headline of the story title.
-
-### Routes
-
-| Method | URI | Name | Description |
-| --- | --- | --- | --- |
-| GET | `{path}` | `letterbook.index` | List stories and render the first one. |
-| GET | `{path}/{slug}` | `letterbook.show` | Render a specific story. |
-| POST | `{path}/{slug}/send` | `letterbook.send` | Send the story's mailable (expects an `email` field). |
 
 ## Contributing
 
