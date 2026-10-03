@@ -114,7 +114,7 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
         }
 
         return (width <= MIN_WIDTH || width >= maxWidth)
-            ? 'bg-neutral-300 dark:bg-neutral-800'
+            ? 'bg-neutral-300 dark:bg-neutral-800 hover:bg-neutral-600 dark:hover:bg-neutral-500'
             : 'bg-neutral-400 dark:bg-neutral-700 hover:bg-neutral-600 dark:hover:bg-neutral-500'
     }
 
