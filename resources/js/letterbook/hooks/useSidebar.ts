@@ -60,14 +60,19 @@ function reducer(machine: SidebarMachine, event: SidebarEvent): SidebarMachine {
     }
 }
 
+function initialMachine(): SidebarMachine {
+    const isDesktop = typeof window !== 'undefined' && window.matchMedia(`(min-width: ${SIDEBAR_BREAKPOINT}px)`).matches
+
+    return { state: isDesktop ? 'desktopOpen' : 'mobileClosed', desktopOpen: isDesktop, mobileOpen: false }
+}
+
 export function useSidebar() {
-    const [machine, send] = useReducer(reducer, { state: 'desktopOpen', desktopOpen: true, mobileOpen: false })
+    const [machine, send] = useReducer(reducer, undefined, initialMachine)
 
     useEffect(() => {
         const query = window.matchMedia(`(min-width: ${SIDEBAR_BREAKPOINT}px)`)
         const onChange = (event: MediaQueryListEvent) => send(event.matches ? 'enterDesktop' : 'enterMobile')
 
-        send(query.matches ? 'enterDesktop' : 'enterMobile')
         query.addEventListener('change', onChange)
 
         return () => query.removeEventListener('change', onChange)
