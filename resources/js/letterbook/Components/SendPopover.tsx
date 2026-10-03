@@ -7,12 +7,12 @@ import { TextField } from './TextField'
 import { useToast } from '../hooks/useToast'
 
 interface SendPopoverProps {
-    slug: string
+    sendUrl: string
     subject: string
     children: React.ReactNode
 }
 
-export default function SendPopover({ slug, subject, children }: SendPopoverProps) {
+export default function SendPopover({ sendUrl, subject, children }: SendPopoverProps) {
     const [open, setOpen] = useState(false)
     const toast = useToast()
 
@@ -45,7 +45,7 @@ export default function SendPopover({ slug, subject, children }: SendPopoverProp
                                 </Popover.Description>
 
                                 <Form
-                                    action={`/letterbook/${slug}/send`}
+                                    action={sendUrl}
                                     method="post"
                                     resetOnSuccess
                                     options={{ preserveScroll: true, preserveState: true }}

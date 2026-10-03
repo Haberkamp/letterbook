@@ -24,6 +24,7 @@ class LetterbookController
         return Inertia::render('Letterbook/Index', [
             'stories' => $stories,
             'slug' => $slug,
+            'sendUrl' => fn () => $slug ? route('letterbook.send', ['slug' => $slug]) : null,
             'email' => fn () => $this->renderStory($slug),
         ]);
     }

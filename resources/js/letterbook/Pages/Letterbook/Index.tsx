@@ -38,10 +38,11 @@ interface EmailPayload {
 interface PageProps {
     stories: StoryEntry[]
     slug: string | null
+    sendUrl: string | null
     email: EmailPayload
 }
 
-export default function Index({ stories, slug, email }: PageProps) {
+export default function Index({ stories, slug, sendUrl, email }: PageProps) {
     const [queryParam, setQuery] = useQueryParameter('q')
     const query = queryParam ?? ''
     const [mode, setMode] = useQueryParameter('mode')
@@ -380,7 +381,7 @@ export default function Index({ stories, slug, email }: PageProps) {
                                 Text
                             </Tabs.Tab>
                         </Tabs.List>
-                        {slug && <SendPopover slug={slug} subject={email.subject}>Send</SendPopover>}
+                        {sendUrl && <SendPopover sendUrl={sendUrl} subject={email.subject}>Send</SendPopover>}
                     </div>
                 </header>
 
