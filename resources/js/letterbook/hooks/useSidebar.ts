@@ -60,14 +60,41 @@ function reducer(machine: SidebarMachine, event: SidebarEvent): SidebarMachine {
     }
 }
 
+const STORAGE_KEY = 'letterbook.sidebar.state'
+
 function initialMachine(): SidebarMachine {
     const isDesktop = typeof window !== 'undefined' && window.matchMedia(`(min-width: ${SIDEBAR_BREAKPOINT}px)`).matches
+
+    try {
+        const stored = window.sessionStorage.getItem(STORAGE_KEY)
+
+        if (stored !== null) {
+            const saved = JSON.parse(stored) as SidebarMachine
+
+            if (['desktopOpen', 'desktopClosed', 'mobileOpen', 'mobileClosed'].includes(saved.state)) {
+                // Restore the saved state for the current breakpoint
+                return isDesktop
+                    ? { ...saved, state: saved.desktopOpen ? 'desktopOpen' : 'desktopClosed' }
+                    : { ...saved, state: saved.mobileOpen ? 'mobileOpen' : 'mobileClosed' }
+            }
+        }
+    } catch {
+        // Ignore storage failures (e.g. quota exceeded, private mode)
+    }
 
     return { state: isDesktop ? 'desktopOpen' : 'mobileClosed', desktopOpen: isDesktop, mobileOpen: false }
 }
 
 export function useSidebar() {
     const [machine, send] = useReducer(reducer, undefined, initialMachine)
+
+    useEffect(() => {
+        try {
+            window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(machine))
+        } catch {
+            // Ignore storage failures
+        }
+    }, [machine])
 
     useEffect(() => {
         const query = window.matchMedia(`(min-width: ${SIDEBAR_BREAKPOINT}px)`)
