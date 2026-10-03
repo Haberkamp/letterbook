@@ -1,6 +1,6 @@
 # Letterbook
 
-A Storybook for Laravel emails — browse and preview your mailables with Inertia, React and Tailwind. Render each email's HTML and plain-text output, inspect subjects, and send test emails, all from a dedicated UI in your app.
+A better way to develop emails. Similar to Storybook, but for your Laravel mailables.
 
 ## Installation
 
