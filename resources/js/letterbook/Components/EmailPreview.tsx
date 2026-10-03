@@ -106,7 +106,7 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
     const barClass =
         'group/bar absolute top-1/2 z-10 h-40 -translate-y-1/2 cursor-ew-resize rounded-full py-6 opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-visible:opacity-100'
 
-    const focusClass = 'group-focus-visible/bar:outline-2 group-focus-visible/bar:outline-neutral-100 group-focus-visible/bar:outline-offset-2'
+    const focusClass = 'group-focus-visible/bar:focus-ring'
 
     const barColor = () => {
         if (draggingEdge !== null) {
