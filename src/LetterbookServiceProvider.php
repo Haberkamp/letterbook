@@ -2,7 +2,6 @@
 
 namespace Letterbook\Letterbook;
 
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Letterbook\Letterbook\Http\Middleware\SetLetterbookRootView;
@@ -55,35 +54,20 @@ class LetterbookServiceProvider extends ServiceProvider
 
     private function registerRoutes(): void
     {
-        Route::middleware($this->gateMiddleware())
+        Route::middleware($this->middleware())
             ->group(__DIR__.'/../routes/web.php');
     }
 
     /**
-     * @return array<int, string|\Closure>
+     * @return array<int, string>
      */
-    private function gateMiddleware(): array
+    private function middleware(): array
     {
-        $middleware = array_merge(
-            config('letterbook.middleware', ['web']),
-            [SetLetterbookRootView::class],
-        );
-
-        $gate = config('letterbook.gate');
-
-        if ($gate) {
-            $middleware[] = function ($request, $next) use ($gate) {
-                if (is_string($gate) && Gate::has($gate)) {
-                    abort_unless(Gate::allows($gate), 403);
-                } elseif ($gate instanceof \Closure) {
-                    abort_unless($gate($request), 403);
-                }
-
-                return $next($request);
-            };
-        }
-
-        return $middleware;
+        return [
+            ...config('letterbook.middleware', ['web']),
+            SetLetterbookRootView::class,
+            AuthorizeLetterbookAccess::class,
+        ];
     }
 
     private function configureInertia(): void
