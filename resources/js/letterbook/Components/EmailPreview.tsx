@@ -14,7 +14,7 @@ const DEFAULT_WIDTH = 672
 const STEP = 32
 const SHIFT_MULTIPLIER = 4
 const RESERVED_SPACE = 120
-const OVERSHOOT_MAX = 14.4
+const OVERSHOOT_MAX = 12.96
 
 // Overshoot / follow-through: let the handle travel a little past the limit with diminishing resistance
 function overshoot(raw: number, min: number, max: number) {
