@@ -108,12 +108,12 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
 
     const focusClass = 'group-focus-visible/bar:outline-2 group-focus-visible/bar:outline-neutral-100 group-focus-visible/bar:outline-offset-2'
 
-    const barColor = (edge: -1 | 1) => {
-        if (draggingEdge === edge) {
+    const barColor = () => {
+        if (draggingEdge !== null) {
             return 'bg-neutral-600 dark:bg-neutral-500'
         }
 
-        return (edge === -1 ? width <= MIN_WIDTH : width >= maxWidth)
+        return (width <= MIN_WIDTH || width >= maxWidth)
             ? 'bg-neutral-300 dark:bg-neutral-800'
             : 'bg-neutral-400 dark:bg-neutral-700 hover:bg-neutral-600 dark:hover:bg-neutral-500'
     }
@@ -136,7 +136,7 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
                     onKeyDown={barKeyDown(-1)}
                     className={`${barClass} -left-1 -ml-6 px-2.5`}
                 >
-                    <span className={`mx-auto block h-full w-1 rounded-full transition-colors ${focusClass} ${barColor(-1)}`} />
+                    <span className={`mx-auto block h-full w-1 rounded-full transition-colors ${focusClass} ${barColor()}`} />
                 </button>
 
                 <iframe
@@ -163,7 +163,7 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
                     onKeyDown={barKeyDown(1)}
                     className={`${barClass} -right-1 -mr-6 px-2.5`}
                 >
-                    <span className={`mx-auto block h-full w-1 rounded-full transition-colors ${focusClass} ${barColor(1)}`} />
+                    <span className={`mx-auto block h-full w-1 rounded-full transition-colors ${focusClass} ${barColor()}`} />
                 </button>
             </div>
         </div>
