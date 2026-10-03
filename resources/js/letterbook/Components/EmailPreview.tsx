@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useSessionStorage } from '../hooks/useSessionStorage'
 
@@ -13,14 +13,12 @@ const MAX_WIDTH = 1200
 const DEFAULT_WIDTH = 672
 const STEP = 32
 const SHIFT_MULTIPLIER = 4
-
-function clampWidth(width: number) {
-    return Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, width))
-}
+const RESERVED_SPACE = 120
 
 export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
     const [width, setWidth] = useSessionStorage('letterbook.emailPreview.width', DEFAULT_WIDTH)
     const [draggingEdge, setDraggingEdge] = useState<-1 | 1 | null>(null)
+    const { containerRef, maxWidth, clampWidth } = useContainerMaxWidth(MIN_WIDTH)
     const iframeRef = useRef<HTMLIFrameElement>(null)
     const dragStateRef = useRef<{
         startX: number
@@ -28,6 +26,10 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
         edge: -1 | 1
         pointerId: number
     } | null>(null)
+
+    useEffect(() => {
+        setWidth((current) => clampWidth(current))
+    }, [clampWidth, setWidth])
 
     const applyWidth = useCallback((nextWidth: number) => {
         if (iframeRef.current) {
@@ -43,7 +45,7 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
                 return next
             })
         },
-        [applyWidth],
+        [applyWidth, clampWidth],
     )
 
     const startDrag = (edge: -1 | 1) => (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -79,8 +81,8 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
     }
 
     const resetWidth = () => {
-        setWidth(DEFAULT_WIDTH)
-        applyWidth(DEFAULT_WIDTH)
+        setWidth(clampWidth(DEFAULT_WIDTH))
+        applyWidth(clampWidth(DEFAULT_WIDTH))
     }
     if (mode === 'text') {
         return (
@@ -111,20 +113,20 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
             return 'bg-neutral-600 dark:bg-neutral-500'
         }
 
-        return (edge === -1 ? width <= MIN_WIDTH : width >= MAX_WIDTH)
+        return (edge === -1 ? width <= MIN_WIDTH : width >= maxWidth)
             ? 'bg-neutral-300 dark:bg-neutral-800'
             : 'bg-neutral-400 dark:bg-neutral-700 hover:bg-neutral-600 dark:hover:bg-neutral-500'
     }
 
     return (
-        <div className="group relative flex justify-center p-6">
+        <div ref={containerRef} className="group relative flex justify-center p-6">
             <div className="relative">
                 <button
                     type="button"
                     aria-label="Decrease preview width"
                     aria-valuenow={width}
                     aria-valuemin={MIN_WIDTH}
-                    aria-valuemax={MAX_WIDTH}
+                    aria-valuemax={maxWidth}
                     aria-orientation="horizontal"
                     onPointerDown={startDrag(-1)}
                     onPointerMove={onPointerMove}
@@ -151,7 +153,7 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
                     aria-label="Increase preview width"
                     aria-valuenow={width}
                     aria-valuemin={MIN_WIDTH}
-                    aria-valuemax={MAX_WIDTH}
+                    aria-valuemax={maxWidth}
                     aria-orientation="horizontal"
                     onPointerDown={startDrag(1)}
                     onPointerMove={onPointerMove}
@@ -166,4 +168,32 @@ export default function EmailPreview({ html, text, mode }: EmailPreviewProps) {
             </div>
         </div>
     )
+}
+
+function useContainerMaxWidth(minWidth: number) {
+    const [maxWidth, setMaxWidth] = useState(MAX_WIDTH)
+    const containerRef = useRef<HTMLDivElement>(null)
+
+    const clampWidth = useCallback(
+        (value: number) => Math.min(maxWidth, Math.max(minWidth, value)),
+        [maxWidth, minWidth],
+    )
+
+    useEffect(() => {
+        const container = containerRef.current
+        if (!container || typeof ResizeObserver === 'undefined') {
+            return
+        }
+
+        const observer = new ResizeObserver(() => {
+            setMaxWidth(Math.max(minWidth, container.clientWidth - RESERVED_SPACE))
+        })
+
+        observer.observe(container)
+        setMaxWidth(Math.max(minWidth, container.clientWidth - RESERVED_SPACE))
+
+        return () => observer.disconnect()
+    }, [minWidth])
+
+    return { containerRef, maxWidth, clampWidth }
 }
